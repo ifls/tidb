@@ -159,6 +159,7 @@ var (
 	graceful    bool
 )
 
+//主函数
 func main() {
 	flag.Parse()
 	if *version {
