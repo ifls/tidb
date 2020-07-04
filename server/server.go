@@ -287,6 +287,8 @@ func (s *Server) Run() error {
 	if s.cfg.Status.ReportStatus {
 		s.startStatusHTTP()
 	}
+
+	// 死循环, 阻塞
 	for {
 		conn, err := s.listener.Accept()
 		if err != nil {
@@ -362,6 +364,7 @@ func (s *Server) Close() {
 }
 
 // onConn runs in its own goroutine, handles queries from this connection.
+// 处理单个连接
 func (s *Server) onConn(conn *clientConn) {
 	ctx := logutil.WithConnID(context.Background(), conn.connectionID)
 	if err := conn.handshake(ctx); err != nil {
@@ -412,6 +415,7 @@ func (s *Server) onConn(conn *clientConn) {
 	}
 
 	connectedTime := time.Now()
+	// 死循环 处理网络包
 	conn.Run(ctx)
 
 	err = plugin.ForeachPlugin(plugin.Audit, func(p *plugin.Plugin) error {

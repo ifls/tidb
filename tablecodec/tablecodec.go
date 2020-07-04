@@ -42,10 +42,10 @@ var (
 )
 
 var (
-	tablePrefix     = []byte{'t'}
-	recordPrefixSep = []byte("_r")
-	indexPrefixSep  = []byte("_i")
-	metaPrefix      = []byte{'m'}
+	tablePrefix     = []byte{'t'}  //表名 key 前缀
+	recordPrefixSep = []byte("_r") //行
+	indexPrefixSep  = []byte("_i") //索引
+	metaPrefix      = []byte{'m'}  //元数据
 )
 
 const (

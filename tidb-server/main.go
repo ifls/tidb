@@ -185,7 +185,7 @@ func main() {
 	createStoreAndDomain()
 	createServer()
 	signal.SetupSignalHandler(serverShutdown)
-	runServer()
+	runServer() //启动服务器, 阻塞
 	cleanup()
 	syncLog()
 }
@@ -710,7 +710,7 @@ func setupTracing() {
 }
 
 func runServer() {
-	err := svr.Run()
+	err := svr.Run() // 网络服务器入口, 服务连接和协议
 	terror.MustNil(err)
 }
 

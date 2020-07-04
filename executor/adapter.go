@@ -320,6 +320,7 @@ func (a *ExecStmt) Exec(ctx context.Context) (_ sqlexec.RecordSet, err error) {
 		sctx.GetSessionVars().StmtCtx.MemTracker.SetBytesLimit(sctx.GetSessionVars().StmtCtx.MemQuotaQuery)
 	}
 
+	//得到执行器
 	e, err := a.buildExecutor()
 	if err != nil {
 		return nil, err
@@ -674,6 +675,7 @@ type pessimisticTxn interface {
 }
 
 // buildExecutor build a executor from plan, prepared statement may need additional procedure.
+// plan 转 executor
 func (a *ExecStmt) buildExecutor() (Executor, error) {
 	ctx := a.Ctx
 	stmtCtx := ctx.GetSessionVars().StmtCtx

@@ -121,9 +121,9 @@ type Getter interface {
 	Get(ctx context.Context, k Key) ([]byte, error)
 }
 
-// Retriever is the interface wraps the basic Get and Seek methods.
+// Retriever is the interface wraps the basic Get and Seek methods. 查询器
 type Retriever interface {
-	Getter
+	Getter //Get
 	// Iter creates an Iterator positioned on the first entry that k <= entry's key.
 	// If such entry is not found, it returns an invalid Iterator with no error.
 	// It yields only keys that < upperBound. If upperBound is nil, it means the upperBound is unbounded.
@@ -137,7 +137,7 @@ type Retriever interface {
 	IterReverse(k Key) (Iterator, error)
 }
 
-// Mutator is the interface wraps the basic Set and Delete methods.
+// Mutator is the interface wraps the basic Set and Delete methods. 修改器
 type Mutator interface {
 	// Set sets the value for key k as v into kv store.
 	// v must NOT be nil or empty, otherwise it returns ErrCannotSetNilValue.
@@ -153,9 +153,10 @@ type RetrieverMutator interface {
 }
 
 // MemBuffer is an in-memory kv collection, can be used to buffer write operations.
+// 内存 kv 集合, 缓冲写磁盘操作
 type MemBuffer interface {
 	RetrieverMutator
-	// Size returns sum of keys and values length.
+	// Size returns sum of keys and values length. 键值总长度
 	Size() int
 	// Len returns the number of entries in the DB.
 	Len() int
@@ -165,11 +166,11 @@ type MemBuffer interface {
 	//
 	// Note: you cannot modify this MemBuffer until the child buffer finished,
 	// otherwise the Set operation will panic.
-	NewStagingBuffer() MemBuffer
-	// Flush flushes all kvs in this buffer to parrent buffer.
+	NewStagingBuffer() MemBuffer // 获取一个新的
+	// Flush flushes all kvs in this buffer to parent buffer. 写入到下一级缓冲
 	Flush() (int, error)
 	// Discard discads all kvs in this buffer.
-	Discard()
+	Discard() // delete all
 }
 
 // Transaction defines the interface for operations inside a Transaction.
@@ -184,14 +185,13 @@ type Transaction interface {
 	String() string
 	// LockKeys tries to lock the entries with the keys in KV store.
 	LockKeys(ctx context.Context, lockCtx *LockCtx, keys ...Key) error
-	// SetOption sets an option with a value, when val is nil, uses the default
-	// value of this option.
+	// SetOption sets an option with a value, when val is nil, uses the default value of this option.
 	SetOption(opt Option, val interface{})
 	// DelOption deletes an option.
 	DelOption(opt Option)
 	// IsReadOnly checks if the transaction has only performed read operations.
 	IsReadOnly() bool
-	// StartTS returns the transaction start timestamp.
+	// StartTS returns the transaction start timestamp. 事务开始时间
 	StartTS() uint64
 	// Valid returns if the transaction is valid.
 	// A transaction become invalid after commit or rollback.
@@ -377,7 +377,7 @@ type Driver interface {
 }
 
 // Storage defines the interface for storage.
-// Isolation should be at least SI(SNAPSHOT ISOLATION)
+// Isolation should be at least SI(SNAPSHOT ISOLATION) 最低快照隔离
 type Storage interface {
 	// Begin transaction
 	Begin() (Transaction, error)

@@ -1005,6 +1005,7 @@ func (s *session) ParseSQL(ctx context.Context, sql, charset, collation string) 
 	}
 	s.parser.SetSQLMode(s.sessionVars.SQLMode)
 	s.parser.EnableWindowFunc(s.sessionVars.EnableWindowFunction)
+	//解析 sql 语句
 	return s.parser.Parse(sql, charset, collation)
 }
 
@@ -1049,6 +1050,7 @@ func (s *session) ExecuteInternal(ctx context.Context, sql string) (recordSets [
 	return s.Execute(ctx, sql)
 }
 
+// 执行sql 语句的入口
 func (s *session) Execute(ctx context.Context, sql string) (recordSets []sqlexec.RecordSet, err error) {
 	if span := opentracing.SpanFromContext(ctx); span != nil && span.Tracer() != nil {
 		span1 := span.Tracer().StartSpan("session.Execute", opentracing.ChildOf(span.Context()))
@@ -1059,6 +1061,7 @@ func (s *session) Execute(ctx context.Context, sql string) (recordSets []sqlexec
 
 	charsetInfo, collation := s.sessionVars.GetCharsetInfo()
 	parseStartTime := time.Now()
+	// 解析 sql
 	stmtNodes, warns, err := s.ParseSQL(ctx, sql, charsetInfo, collation)
 	if err != nil {
 		s.rollbackOnError(ctx)
@@ -1075,7 +1078,7 @@ func (s *session) Execute(ctx context.Context, sql string) (recordSets []sqlexec
 	}
 	durParse := time.Since(parseStartTime)
 	s.GetSessionVars().DurationParse = durParse
-
+	// 执行
 	rs, err := s.ExecuteStmt(ctx, stmtNodes[0])
 	if err != nil {
 		s.sessionVars.StmtCtx.AppendError(err)
@@ -1119,6 +1122,7 @@ func (s *session) Parse(ctx context.Context, sql string) ([]ast.StmtNode, error)
 	return stmts, nil
 }
 
+// 执行 sql 语句
 func (s *session) ExecuteStmt(ctx context.Context, stmtNode ast.StmtNode) (sqlexec.RecordSet, error) {
 	if span := opentracing.SpanFromContext(ctx); span != nil && span.Tracer() != nil {
 		span1 := span.Tracer().StartSpan("session.ExecuteStmt", opentracing.ChildOf(span.Context()))
@@ -1141,6 +1145,7 @@ func (s *session) ExecuteStmt(ctx context.Context, stmtNode ast.StmtNode) (sqlex
 
 	// Transform abstract syntax tree to a physical plan(stored in executor.ExecStmt).
 	compiler := executor.Compiler{Ctx: s}
+	// 编译
 	stmt, err := compiler.Compile(ctx, stmtNode)
 	if err != nil {
 		s.rollbackOnError(ctx)
@@ -1163,6 +1168,7 @@ func (s *session) ExecuteStmt(ctx context.Context, stmtNode ast.StmtNode) (sqlex
 
 	// Execute the physical plan.
 	logStmt(stmtNode, s.sessionVars)
+	// 执行语句
 	recordSet, err := runStmt(ctx, s, stmt)
 	if err != nil {
 		if !kv.ErrKeyExists.Equal(err) {
@@ -1198,6 +1204,7 @@ func runStmt(ctx context.Context, se *session, s sqlexec.Statement) (rs sqlexec.
 	if err != nil {
 		return nil, err
 	}
+	// 执行
 	rs, err = s.Exec(ctx)
 	sessVars.TxnCtx.StatementCount++
 	if !s.IsReadOnly(sessVars) {
@@ -1216,6 +1223,7 @@ func runStmt(ctx context.Context, se *session, s sqlexec.Statement) (rs sqlexec.
 		}
 	}
 	if rs != nil {
+		//返回查询结果集
 		return &execStmtResult{
 			RecordSet: rs,
 			sql:       s,

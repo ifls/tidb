@@ -195,6 +195,8 @@ func (tc *TiDBContext) WarningCount() uint16 {
 
 // ExecuteStmt implements QueryCtx interface.
 func (tc *TiDBContext) ExecuteStmt(ctx context.Context, stmt ast.StmtNode) (ResultSet, error) {
+	// 执行, 进入 sql 层
+	//session/session.go
 	rs, err := tc.Session.ExecuteStmt(ctx, stmt)
 	if err != nil {
 		return nil, err

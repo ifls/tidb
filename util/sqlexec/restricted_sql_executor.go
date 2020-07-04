@@ -85,6 +85,7 @@ type Statement interface {
 }
 
 // RecordSet is an abstract result set interface to help get data from Plan.
+// 查询结果集
 type RecordSet interface {
 	// Fields gets result fields.
 	Fields() []*ast.ResultField

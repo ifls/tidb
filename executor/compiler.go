@@ -54,11 +54,12 @@ func (c *Compiler) Compile(ctx context.Context, stmtNode ast.StmtNode) (*ExecStm
 	}
 
 	infoSchema := infoschema.GetInfoSchema(c.Ctx)
+	// 预处理, 检查
 	if err := plannercore.Preprocess(c.Ctx, stmtNode, infoSchema); err != nil {
 		return nil, err
 	}
 	stmtNode = plannercore.TryAddExtraLimit(c.Ctx, stmtNode)
-
+	//优化
 	finalPlan, names, err := planner.Optimize(ctx, c.Ctx, stmtNode, infoSchema)
 	if err != nil {
 		return nil, err
@@ -69,6 +70,8 @@ func (c *Compiler) Compile(ctx context.Context, stmtNode ast.StmtNode) (*ExecStm
 	if c.Ctx.GetSessionVars().StmtCtx.Priority == mysql.NoPriority {
 		lowerPriority = needLowerPriority(finalPlan)
 	}
+
+	//构造
 	return &ExecStmt{
 		GoCtx:         ctx,
 		InfoSchema:    infoSchema,
