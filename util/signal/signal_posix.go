@@ -34,7 +34,7 @@ func SetupSignalHandler(shutdownFunc func(bool)) {
 		buf := make([]byte, 1<<16)
 		for {
 			sig := <-usrDefSignalChan
-			if sig == syscall.SIGUSR1 {
+			if sig == syscall.SIGUSR1 {   //打印堆栈
 				stackLen := runtime.Stack(buf, true)
 				log.Printf("\n=== Got signal [%s] to dump goroutine stack. ===\n%s\n=== Finished dumping goroutine stack. ===\n", sig, buf[:stackLen])
 			}
@@ -48,7 +48,7 @@ func SetupSignalHandler(shutdownFunc func(bool)) {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	go func() {
+	go func() {   //停止服务器
 		sig := <-closeSignalChan
 		logutil.BgLogger().Info("got signal to exit", zap.Stringer("signal", sig))
 		shutdownFunc(sig == syscall.SIGQUIT)

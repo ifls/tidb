@@ -154,7 +154,7 @@ var (
 var (
 	storage     kv.Storage
 	dom         *domain.Domain
-	svr         *server.Server
+	svr         *server.Server   //服务器实例对象
 	tempDirLock fslock.Handle
 	graceful    bool
 )
@@ -166,25 +166,26 @@ func main() {
 		fmt.Println(printer.GetTiDBInfo())
 		os.Exit(0)
 	}
-	registerStores()
-	registerMetrics()
+	registerStores()	//注册 kv 储存引擎 驱动
+	registerMetrics()	//注册 prometheus metrics
 	config.InitializeConfig(*configPath, *configCheck, *configStrict, reloadConfig, overrideConfig)
 	if config.GetGlobalConfig().OOMUseTmpStorage {
 		config.GetGlobalConfig().UpdateTempStoragePath()
 		initializeTempDir()
 		checkTempStorageQuota()
 	}
-	setGlobalVars()
-	setCPUAffinity()
-	setupLog()
-	setHeapProfileTracker()
-	setupTracing() // Should before createServer and after setup config.
-	printInfo()
+
+	setGlobalVars()  //保存全局变量
+	setCPUAffinity()  //设置 cpu 亲和性
+	setupLog()  //安装 log
+	setHeapProfileTracker()  //内存剖析
+	setupTracing() // Should before createServer and after setup config.  opentracing 分布式追踪
+	printInfo()   //打印信息
 	setupBinlogClient()
 	setupMetrics()
 	createStoreAndDomain()
 	createServer()
-	signal.SetupSignalHandler(serverShutdown)
+	signal.SetupSignalHandler(serverShutdown)   //注册信号处理
 	runServer() //启动服务器, 阻塞
 	cleanup()
 	syncLog()

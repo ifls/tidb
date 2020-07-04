@@ -52,6 +52,7 @@ import (
 
 const defaultStatusPort = 10080
 
+// 启动 http api 报告 服务器状态
 func (s *Server) startStatusHTTP() {
 	go s.startHTTPServer()
 }
